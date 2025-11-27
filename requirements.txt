@@ -1,5 +1,5 @@
-transformers
-torch
+transformers>=4.30.0
+torch>=2.0.0
 youtube-transcript-api
 sentencepiece
 pandas
@@ -10,4 +10,5 @@ scikit-learn
 rouge-score
 sentence-transformers
 datasets
+evaluate
 accelerate
