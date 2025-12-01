@@ -6,10 +6,16 @@ This repository hosts the implementation of a scalable AI system designed to gen
 
 The system integrates principles from **Retrieval-Augmented Generation (RAG)** for context management and demonstrates a viable pipeline for democratizing video intelligence with low inference costs.
 
-## App
+## Demonstration
 
+### 1. APP (TBA)
+...
+...
+...
 
-## Human Evaluation
+### 2. Interactive Model Demo
+
+In addition to the app application, we deployed a dedicated web-based demonstration on [Hugging Face Spaces](https://huggingface.co/spaces/ying2sun/youtube-video-summarizer-capstone). This demo lets users interact directly with our fine-tuned Flan-T5 model by either selecting pre-configured YouTube demo videos (with stored transcripts) or pasting their own video transcripts. The deployment shows that high-quality, abstractive video summarization can be run efficiently on standard CPU-only hardware, without relying on paid external APIs at inference time.
 
 
 ## Technical Objectives
@@ -23,8 +29,13 @@ The system integrates principles from **Retrieval-Augmented Generation (RAG)** f
 The project directory is organized as follows:
 
 * **src/**: Contains the production-ready source code for the inference engine and the `VideoSummarizer` class.
-* **notebooks/**: Includes Jupyter notebooks documenting the experimental process, including data ETL, RAG prototyping, evaluation and model training workflows.
-* **data/**: The derived dataset (`gold_dataset_merged_final.csv`) is included.
+* **notebooks/**: Documentation of the experimental process, analysis, and legacy comparisons.
+    * `final_analysis_and_plots.ipynb`: The primary notebook containing the reproducible pipeline for model training, inference, quantitative evaluation (ROUGE/Cosine Similarity), and generation of final report visualizations.
+    * `legacy_rag_experiment.ipynb`: Records the initial 'RAG Prototype' approach using Retrieval-Augmented Generation (RAG), preserved for architectural comparison.
+    * `human_evaluation.ipynb`: Contains the qualitative assessment protocols and results from human-in-the-loop testing.
+    * `appendix_model_benchmarking.ipynb`: A comparative analysis notebook benchmarking the local Flan-T5 model against cloud-based LLMs (via OpenRouter) to assess performance trade-offs.
+    * `fix_notebook.py`: Utility script for notebook maintenance and formatting.*
+* **data/**: The derived dataset (`gold_dataset_merged_final.csv`) is included. Also, the human_evaluation_sample - human_evaluation_sample.csv is included, which is for the human evaluation part of the project.
 * **app/**: Lists all files for api calls and the application.
 * **reports/**: Contains the final project report detailing the methodology, error analysis, and conclusions.
 * **images/**: Stores data visualizations generated during the evaluation phase, such as performance metrics and embedding comparisons.
@@ -37,21 +48,57 @@ The development process followed a four-stage pipeline:
 1.  **Data Acquisition & Preprocessing:**
     Utilization of the `jamescalam/youtube-transcriptions` dataset. The pipeline handles text cleaning, concatenation based on video IDs, and tokenization.
 
-2.  **RAG Prototype (Phase I):**
+2.  **RAG Prototype:**
     Initial implementation using FAISS vector stores and `sentence-transformers` to retrieve relevant transcript chunks. While effective for QA, this approach highlighted limitations in global narrative summarization, prompting a shift to fine-tuning.
 
-3.  **Knowledge Distillation (Phase II):**
+3.  **Knowledge Distillation:**
     Deployment of a robust data pipeline to interact with the Gemini API, generating approximately 300 high-quality summary-transcript pairs. This synthetic dataset served as the ground truth for student model training.
 
 4.  **Supervised Fine-Tuning:**
     Fine-tuning of the `google/flan-t5-base` model using the generated dataset. Training employed mixed-precision (FP16) and optimized hyperparameters to ensure convergence within limited GPU resources.
 
-## Performance Evaluation
+5.  **Model Deployment:**
+    Deployment of the fine-tuned model as an interactive web application using **Hugging Face Spaces** and **Gradio**. This supports real-time inference on user-provided video transcripts and a small set of pre-loaded YouTube demo videos that emulate the full URL-to-summary workflow. This design removes the need for any local setup, while demonstrating the model's portability, low inference cost, and practical utility on CPU-only infrastructure.
 
+6.  **Comparative Benchmarking:**
+    Implementation of a benchmarking framework to evaluate the fine-tuned local model against a state-of-the-art cloud-based Large Language Model (GPT-OSS-20B via OpenRouter). This stage quantifies the trade-offs between model size, inference cost, data privacy, and semantic accuracy, validating the efficiency of the Small Language Model (SLM) for specific summarization tasks.
+
+    
+## Performance Evaluation
+### Human Evaluation
+
+Results from the human evaluation can be replicated by running the notebooks/human_evaluation.ipynb notebook. The notebook utilizes the csv located at data/human_evaluation_sample - human_evaluation_sample.csv in the Github repository.
+
+![Human Evaluation](images/human_evaluation.png)
+
+Our group conducted a human evaluation of the six models below.
+
+1. Bart-large-cnn
+2. RAG (with bart-large-cnn)
+3. RAG (with flan-t5-large)
+4. RAG (with Knowledge Distillation)
+5. Gpt-oss-20b (via OpenRouter api)
+6. Human
+
+To compare how well the six models could summarize, our team randomly sampled 30 YouTube videos to watch. The 30 videos are in the same domain, technical tutorials, and are from the same youtube-transcriptions dataset but not in the training data. Then for each of the 30 videos we wrote a summary of the video. From there we scored the six summaries for each video on informativeness, quality, and relevance. The scores were on a scale of 1 (poor) to 5 (excellent) and their definitions are below.
+
+1. Informativeness: How much important information does the summary convey?
+2. Quality: Is the summary clear, well-written, and complete overall?
+3. Relevance: Does the summary capture the key points of the video?
+
+In the bar chart we bold the score of the model if it is not statistically significant from the best score at p=0.05, using a bootstrap-based paired mean difference test.
+
+We find that across all three metrics, humans perform the best, especially in terms of quality. Humans achieved a quality score of 4.3 while the gpt-oss-20b, bart-large-cnn model, RAG (with flan-t5-large), RAG (with Knowledge Distillation), and RAG (with bart-large-cnn) model achieved a quality score of 3.7, 3, 2.7, 2.5, and 2.2 respectively. To add, the quality score of humans was not significantly different from the highest quality score (4.3 vs. 4.3), while the quality score of RAG (with bart-large-cnn), RAG (with flan-t5-large), RAG (with Knowledge Distillation), bart-large-cnn, and gpt-oss-20b (2.2 vs. 4.3 and 2.7 vs. 4.3 and 2.5 vs. 4.3 and 3 vs. 4.3 and 3.7 vs. 4.3) were significantly different. Additionally we saw that the bart-large-cnn model performed better than all the RAG models in terms of informativeness, quality, and relevance. In all, across the six models, our human evaluation shows humans to have the best summarization performance.
+
+### Quantitative Evaluation (ROUGE Metrics) 
 We evaluated the model using both lexical and semantic metrics:
 
-* **Lexical Overlap (ROUGE):** The model achieved ROUGE-1 scores averaging 0.20. This relatively low score is attributed to the vocabulary divergence between the teacher (Gemini) and student (Flan-T5) models.
-* **Semantic Similarity:** Analysis using Cosine Similarity on vector embeddings reveals scores between 0.60 and 0.80. This significant metric demonstrates that the model successfully captures the semantic meaning and narrative structure of the videos, despite using different phrasing than the ground truth.
+| Metric | Score / Observation |
+| :--- | :--- |
+| **ROUGE-1** | **0.2486** (Improved baseline) |
+| **ROUGE-2** | **0.0503** |
+| **Semantic Similarity** | **0.5966** (Strong conceptual understanding) |
+| **Inference Speed** | < 5 seconds per video (on GPU) |
 
 ## Execution Instructions
 
@@ -118,8 +165,13 @@ The fine-tuned model weights (`final_flan_t5_model`) are hosted externally due t
 
 ## License and Attribution
 
-* **Code Attribution:** Certain segments of the RAG retrieval logic and text preprocessing were adapted from open-source documentation (e.g., Hugging Face Tutorials, YouTube Transcript API docs). These segments are explicitly marked with in-line attributions within the source code files.
-* **License:** This project is licensed under the MIT License.
+### Attribution
+* **Open Source Code:** Certain segments of the RAG retrieval logic and text preprocessing were adapted from open-source documentation (e.g., Hugging Face Tutorials, YouTube Transcript API docs). These segments are explicitly marked with in-line attributions within the source code files.
+* **AI Assistance:** Generative AI tools (e.g., ChatGPT, Gemini) were utilized during the development process for studying, code debugging, refactoring, and generating documentation strings (docstrings). All AI-generated code was reviewed and verified by the human authors.
+* **Synthetic Data:** The "Gold Standard" summaries used for training were synthetically generated using the **Google Gemini API**.
+
+### License
+This project is licensed under the **MIT License**.
 
 ---
 *This project was submitted in partial fulfillment of the requirements for the Master of Applied Data Science (MADS) program.*

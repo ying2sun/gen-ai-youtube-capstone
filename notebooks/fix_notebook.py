@@ -1,7 +1,7 @@
 import json
 
 # Replace with your actual filename
-filename = "Youtube_GenAI_(to_github).ipynb" 
+filename = "/workspaces/Capstone/notebooks/appendix_model_benchmarking.ipynb" 
 
 with open(filename, 'r', encoding='utf-8') as f:
     data = json.load(f)

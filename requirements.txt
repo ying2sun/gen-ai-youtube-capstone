@@ -12,3 +12,5 @@ sentence-transformers
 datasets
 evaluate
 accelerate
+altair
+scipy
