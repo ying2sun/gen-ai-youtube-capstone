@@ -2,21 +2,28 @@
 
 ## Project Overview
 
-This repository hosts the implementation of a scalable AI system designed to generate abstractive summaries for YouTube video transcripts. Addressing the challenges of processing long-form unstructured audio-visual data, this project employs a **Knowledge Distillation** framework. We utilize a high-capacity Large Language Model (Gemini 2.0Flash) to generate a synthetic "Gold Standard" dataset, which is subsequently used to fine-tune a computationally efficient **Flan-T5** model.
+In the era of digital content explosion, extracting key insights from unstructured video data remains a significant bottleneck. This repository hosts the implementation of a comprehensive AI system designed to democratize video intelligence. Our solution addresses the high cost and latency of proprietary LLMs by employing a **Knowledge Distillation** framework, where a high-capacity teacher model (Gemini 2.0) supervises the training of an efficient, locally deployment-ready student model (Flan-T5).
 
-The system integrates principles from **Retrieval-Augmented Generation (RAG)** for context management and demonstrates a viable pipeline for democratizing video intelligence with low inference costs.
+The project encompasses a full-stack data science lifecycle, featuring:
+
+* **Core Model Engineering:** A fine-tuned Flan-T5 model that achieves "cloud-level" semantic understanding with zero marginal inference cost, validated through rigorous ROUGE and Cosine Similarity benchmarking.
+* **Human-Centric Evaluation:** Beyond automated metrics, we implemented a structured **Human Evaluation** protocol to assess the practical utility, coherence, and factual accuracy of the generated summaries, ensuring the output aligns with human cognitive needs.
+* **Real-World Deployment:** The system is operationalized through a dual-deployment strategy: a research-focused web demo on **Hugging Face Spaces** for model transparency, and a consumer-facing **Mobile Application** (developed by the team) that integrates cloud-based inference for scalable user interaction.
+
+This work demonstrates a viable path for building privacy-preserving, cost-effective NLP applications that do not compromise on narrative quality.
 
 ## Demonstration
 
-### 1. APP (TBA)
-...
-...
-...
-
-### 2. Interactive Model Demo
+### 1. Research-focused web demo on Hugging Face Spaces
 
 In addition to the app application, we deployed a dedicated web-based demonstration on [Hugging Face Spaces](https://huggingface.co/spaces/ying2sun/youtube-video-summarizer-capstone). This demo lets users interact directly with our fine-tuned Flan-T5 model by either selecting pre-configured YouTube demo videos (with stored transcripts) or pasting their own video transcripts. The deployment shows that high-quality, abstractive video summarization can be run efficiently on standard CPU-only hardware, without relying on paid external APIs at inference time.
 
+### 2. Consumer-facing Mobile Application
+
+To demonstrate an alternative deployment pathway, we developed a full-stack web application leveraging cloud-based infrastructure.
+* Live Demo: The app can be tested here: [https://team-candlestyt.lovable.app](https://team-candlestyt.lovable.app)
+
+*Note: The source code for this application is contained entirely within the `app/` directory, functioning as a standalone monorepo within this project.*
 
 ## Technical Objectives
 
@@ -31,22 +38,21 @@ The project directory is organized as follows:
 * **src/**: Contains the production-ready source code for the inference engine and the `VideoSummarizer` class.
 * **notebooks/**: Documentation of the experimental process, analysis, and legacy comparisons.
     * `final_analysis_and_plots.ipynb`: The primary notebook containing the reproducible pipeline for model training, inference, quantitative evaluation (ROUGE/Cosine Similarity), and generation of final report visualizations.
-    * `legacy_rag_experiment.ipynb`: Records the initial 'RAG Prototype' approach using Retrieval-Augmented Generation (RAG), preserved for architectural comparison.
     * `human_evaluation.ipynb`: Contains the qualitative assessment protocols and results from human-in-the-loop testing.
+    * `legacy_rag_experiment.ipynb`: Records the initial 'RAG Prototype' approach using Retrieval-Augmented Generation (RAG), preserved for architectural comparison.
     * `appendix_model_benchmarking.ipynb`: A comparative analysis notebook benchmarking the local Flan-T5 model against cloud-based LLMs (via OpenRouter) to assess performance trade-offs.
-    * `fix_notebook.py`: Utility script for notebook maintenance and formatting.*
-* **data/**: The derived dataset (`gold_dataset_merged_final.csv`) is included. Also, the human_evaluation_sample - human_evaluation_sample.csv is included, which is for the human evaluation part of the project.
-* **app/**: Lists all files for api calls and the application.
-* **reports/**: Contains the final project report detailing the methodology, error analysis, and conclusions.
+    * `fix_notebook.py`: Utility script for notebook maintenance and formatting.
+* **data/**: The derived dataset (`gold_dataset_merged_final.csv`) is included. Also, the human_evaluation_sample - `human_evaluation_sample.csv` is included, which is for the human evaluation part of the project.
+* **app/**: Contains the complete source code for the consumer-facing mobile application (React/TypeScript). This directory operates as a standalone frontend project with its own dependencies and documentation.
 * **images/**: Stores data visualizations generated during the evaluation phase, such as performance metrics and embedding comparisons.
 * **requirements.txt**: Lists all Python dependencies required to reproduce the environment.
 
 ## Methodology
 
-The development process followed a four-stage pipeline:
+The development process followed a 6-stage pipeline:
 
 1.  **Data Acquisition & Preprocessing:**
-    Utilization of the `jamescalam/youtube-transcriptions` dataset. The pipeline handles text cleaning, concatenation based on video IDs, and tokenization.
+    Utilization of the [`jamescalam/youtube-transcriptions`](https://huggingface.co/datasets/jamescalam/youtube-transcriptions) dataset. The pipeline handles text cleaning, concatenation based on video IDs, and tokenization.
 
 2.  **RAG Prototype:**
     Initial implementation using FAISS vector stores and `sentence-transformers` to retrieve relevant transcript chunks. While effective for QA, this approach highlighted limitations in global narrative summarization, prompting a shift to fine-tuning.
@@ -58,10 +64,10 @@ The development process followed a four-stage pipeline:
     Fine-tuning of the `google/flan-t5-base` model using the generated dataset. Training employed mixed-precision (FP16) and optimized hyperparameters to ensure convergence within limited GPU resources.
 
 5.  **Model Deployment:**
-    Deployment of the fine-tuned model as an interactive web application using **Hugging Face Spaces** and **Gradio**. This supports real-time inference on user-provided video transcripts and a small set of pre-loaded YouTube demo videos that emulate the full URL-to-summary workflow. This design removes the need for any local setup, while demonstrating the model's portability, low inference cost, and practical utility on CPU-only infrastructure.
+    Deployment of the fine-tuned model as an interactive web application using Hugging Face Spaces and Gradio. This supports real-time inference on user-provided video transcripts and a small set of pre-loaded YouTube demo videos that emulate the full URL-to-summary workflow. This design removes the need for any local setup, while demonstrating the model's portability, low inference cost, and practical utility on CPU-only infrastructure.
 
 6.  **Comparative Benchmarking:**
-    Implementation of a benchmarking framework to evaluate the fine-tuned local model against a state-of-the-art cloud-based Large Language Model (GPT-OSS-20B via OpenRouter). This stage quantifies the trade-offs between model size, inference cost, data privacy, and semantic accuracy, validating the efficiency of the Small Language Model (SLM) for specific summarization tasks.
+    Implementation of a benchmarking framework to evaluate the fine-tuned local model against a state-of-the-art cloud-based Large Language Model (`GPT-OSS-20B` via OpenRouter). This stage quantifies the trade-offs between model size, inference cost, data privacy, and semantic accuracy, validating the efficiency of the Small Language Model (SLM) for specific summarization tasks.
 
     
 ## Performance Evaluation
@@ -154,7 +160,7 @@ This project utilizes the **YouTube Transcriptions** dataset hosted on Hugging F
 
 ### 2. Derived Data (Synthetic Training Set)
 To facilitate knowledge distillation, we generated a synthetic dataset containing "Gold Standard" summaries.
-* **Method:** Generated using Google's Gemini 2.0 Pro API based on the source transcripts.
+* **Method:** Generated using Google's Gemini 2.0 Flash API based on the source transcripts.
 * **Availability:** The derived dataset (`gold_dataset_merged_final.csv`) is included in this repository for reproducibility: [https://github.com/sokkerstar123/Capstone/blob/main/data/gold_dataset_merged_final.csv](https://github.com/sokkerstar123/Capstone/blob/main/data/gold_dataset_merged_final.csv).
 * **Terms of Use:** This derived data is intended solely for academic research and verifying the results of this project.
 
@@ -174,4 +180,4 @@ The fine-tuned model weights (`final_flan_t5_model`) are hosted externally due t
 This project is licensed under the **MIT License**.
 
 ---
-*This project was submitted in partial fulfillment of the requirements for the Master of Applied Data Science (MADS) program.*
+*This project was submitted in partial fulfillment of the requirements for the Master of Applied Data Science (MADS) program, University of Michigan.*

@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Request, HTTPException
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
-from VideoSummarizer import VideoSummarizer
+from MobileSummarizer import VideoSummarizer
 from dotenv import load_dotenv
 import os
 
@@ -9,7 +9,7 @@ load_dotenv()
 
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 APIFY_TOKEN = os.getenv("APIFY_TOKEN")
-API_AUTH_KEY = "MixfOlIYTnMm"   # required key to interact
+API_AUTH_KEY = "********"   # required key to interact
 
 app = FastAPI()
 
